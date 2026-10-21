@@ -171,24 +171,6 @@
           <strong>Cuenta y nube</strong>
           <span class="badge badge--soft" id="account-status">LOCAL</span>
         </div>
-        <p class="tiny" id="account-hint">Sincroniza tus movimientos entre dispositivos y activa el Atajo de iOS.</p>
-
-        <div id="auth-form">
-          <label class="field">
-            <span>Email</span>
-            <input id="auth-email" name="email" type="email" inputmode="email" autocomplete="email" autocapitalize="none" autocorrect="off" spellcheck="false" placeholder="tu@email.com">
-          </label>
-          <label class="field">
-            <span>Contraseña</span>
-            <input id="auth-password" name="password" type="password" autocomplete="current-password" placeholder="Mínimo 6 caracteres">
-          </label>
-          <div class="auth-actions">
-            <button class="btn primary" data-action="login">Entrar</button>
-            <button class="btn secondary" data-action="signup">Crear cuenta</button>
-          </div>
-          <p class="auth-msg" id="auth-msg"></p>
-        </div>
-
         <div id="account-panel" hidden>
           <p class="small" id="account-email"></p>
           <p class="tiny" id="sync-info">—</p>
@@ -376,21 +358,41 @@
     <p class="muted small" id="gate-loading">Cargando…</p>
 
     <div id="gate-login" hidden>
-      <h2 class="welcome-title">Inicia sesión</h2>
-      <p class="tiny" id="gate-login-hint">Entra con tu email y contraseña para ver tus finanzas.</p>
+      <h2 class="welcome-title" id="gate-title">Inicia sesión</h2>
+      <p class="tiny" id="gate-hint">Entra con tu email y contraseña para ver tus finanzas.</p>
+      <label class="field" id="gate-name-field" hidden>
+        <span>¿Cómo te llamas?</span>
+        <input id="gate-name" maxlength="24" autocomplete="given-name" placeholder="Ej. Ana">
+      </label>
       <label class="field">
         <span>Email</span>
         <input id="gate-email" name="email" type="email" inputmode="email" autocomplete="email" autocapitalize="none" autocorrect="off" spellcheck="false" placeholder="tu@email.com">
       </label>
       <label class="field">
         <span>Contraseña</span>
-        <input id="gate-password" name="password" type="password" autocomplete="current-password" placeholder="Mínimo 6 caracteres">
+        <div class="pw-wrap">
+          <input id="gate-password" name="password" type="password" autocomplete="current-password" placeholder="Mínimo 6 caracteres">
+          <button type="button" class="pw-toggle" data-action="toggle-pw" aria-label="Mostrar contraseña">Ver</button>
+        </div>
       </label>
-      <div class="auth-actions">
-        <button class="btn primary" data-action="gate-login">Entrar</button>
-        <button class="btn secondary" data-action="gate-signup" id="gate-signup">Crear cuenta</button>
-      </div>
+      <button class="btn primary" data-action="gate-submit" id="gate-submit">Entrar</button>
+      <button class="btn ghost" data-action="gate-forgot" id="gate-forgot">¿Olvidaste tu contraseña?</button>
+      <button class="btn ghost" data-action="gate-toggle-mode" id="gate-toggle">¿No tienes cuenta? Regístrate</button>
       <p class="auth-msg" id="gate-msg"></p>
+    </div>
+
+    <div id="gate-recovery" hidden>
+      <h2 class="welcome-title">Nueva contraseña</h2>
+      <p class="tiny">Escribe una contraseña nueva para tu cuenta.</p>
+      <label class="field">
+        <span>Contraseña nueva</span>
+        <div class="pw-wrap">
+          <input id="gate-new-password" type="password" autocomplete="new-password" placeholder="Mínimo 6 caracteres">
+          <button type="button" class="pw-toggle" data-action="toggle-pw" aria-label="Mostrar contraseña">Ver</button>
+        </div>
+      </label>
+      <button class="btn primary" data-action="gate-set-password">Guardar contraseña</button>
+      <p class="auth-msg" id="gate-recovery-msg"></p>
     </div>
 
     <div id="gate-pin" hidden>

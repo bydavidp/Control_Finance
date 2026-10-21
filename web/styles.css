@@ -32,10 +32,6 @@ svg{fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-lin
 input{font:inherit}
 
 .app{position:relative;width:100%;max-width:480px;min-height:100dvh;margin:0 auto;background:var(--bg)}
-@media (min-width:560px){
-  body{background:#05080c}
-  .app{box-shadow:0 0 0 1px #1b2430,0 30px 80px rgba(0,0,0,.6)}
-}
 
 .main{
   height:100dvh;
@@ -214,7 +210,7 @@ input[type=date]{color-scheme:dark}
 .sheet{
   position:fixed;left:50%;bottom:0;transform:translateX(-50%);
   width:100%;max-width:480px;max-height:94dvh;overflow-y:auto;z-index:50;
-  background:var(--surface);border:1px solid var(--border);border-bottom:0;
+  background:var(--surface);border:0;box-shadow:inset 0 1px 0 var(--border);
   border-radius:24px 24px 0 0;
   padding:10px 18px calc(18px + env(safe-area-inset-bottom));
   animation:sheetIn .28s cubic-bezier(.2,.8,.2,1);
@@ -315,3 +311,18 @@ body.static .bar{animation:none !important}
 .pin-box{margin-top:16px;padding-top:14px;border-top:1px solid var(--border)}
 .pin-box .field{margin-top:12px;margin-bottom:10px}
 .pin-box .btn{margin-top:4px}
+
+/* Contraseña visible y PIN incorrecto */
+.pw-wrap{position:relative;display:block}
+.pw-wrap input{padding-right:64px}
+.pw-toggle{position:absolute;right:6px;top:50%;transform:translateY(-50%);padding:8px 10px;border-radius:9px;font-size:12px;font-weight:700;color:var(--accent)}
+.gate-card .btn.ghost{margin-top:4px}
+.pin-dots.wrong{animation:shake .4s ease}
+.pin-dots.wrong span{background:var(--red);border-color:var(--red)}
+@keyframes shake{
+  0%,100%{transform:translateX(0)}
+  20%{transform:translateX(-8px)}
+  40%{transform:translateX(8px)}
+  60%{transform:translateX(-6px)}
+  80%{transform:translateX(6px)}
+}

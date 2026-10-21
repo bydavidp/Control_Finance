@@ -8,7 +8,7 @@ const cloudEnabled = Boolean(CONFIG.supabaseUrl && CONFIG.supabaseAnonKey);
 let sb = null;
 if (cloudEnabled && window.supabase?.createClient) {
   sb = window.supabase.createClient(CONFIG.supabaseUrl, CONFIG.supabaseAnonKey, {
-    auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: false },
+    auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true },
   });
 }
 
@@ -24,6 +24,8 @@ const cloud = {
   checked: false,
   unlocked: false,
   passwordFallback: false,
+  recovery: false,
+  signupMode: false,
   channel: null,
   quickToken: "",
   hasQuickToken: false,
@@ -765,7 +767,7 @@ function setMsg(id, text, tone = "") {
   el.className = "auth-msg" + (tone ? " " + tone : "");
 }
 
-function setAuthMessage(text, tone = "", prefix = "auth") {
+function setAuthMessage(text, tone = "", prefix = "gate") {
   setMsg("#" + prefix + "-msg", text, tone);
 }
 
@@ -785,11 +787,9 @@ function renderCloudUI() {
   }
 
   const logged = Boolean(cloud.uid);
-  if (card) card.hidden = false;
+  if (card) card.hidden = !logged;
   if (quick) quick.hidden = !logged;
-  $("#auth-form").hidden = logged;
   $("#account-panel").hidden = !logged;
-  $("#account-hint").hidden = logged;
 
   badge.textContent = cloudLabels(cloud.status);
   badge.className = cloudBadgeClass(cloud.status);
@@ -834,11 +834,13 @@ function translateAuthError(message) {
   if (/user already registered/i.test(text)) return "Ese email ya tiene cuenta. Toca Entrar.";
   if (/password should be at least/i.test(text)) return "La contraseña debe tener al menos 6 caracteres.";
   if (/unable to validate email/i.test(text)) return "Escribe un email válido.";
+  if (/security purposes|rate limit|seconds/i.test(text)) return "Espera un minuto antes de volver a intentarlo.";
+  if (/should be different/i.test(text)) return "La contraseña nueva debe ser distinta a la anterior.";
   if (/fetch|network|failed/i.test(text)) return "Sin conexión. Inténtalo de nuevo.";
   return text || "No se pudo completar la operación.";
 }
 
-function authCredentials(prefix = "auth") {
+function authCredentials(prefix = "gate") {
   const email = $("#" + prefix + "-email").value.trim();
   const password = $("#" + prefix + "-password").value;
   if (!email || !email.includes("@")) {
@@ -852,7 +854,7 @@ function authCredentials(prefix = "auth") {
   return { email, password };
 }
 
-async function signIn(prefix = "auth") {
+async function signIn(prefix = "gate") {
   if (!sb) return;
   const credentials = authCredentials(prefix);
   if (!credentials) return;
@@ -870,15 +872,16 @@ async function signIn(prefix = "auth") {
   await onSignedIn(data.session);
 }
 
-async function signUp(prefix = "auth") {
+async function signUp(prefix = "gate") {
   if (!sb) return;
   const credentials = authCredentials(prefix);
   if (!credentials) return;
+  const name = $("#gate-name").value.trim().slice(0, 24) || credentials.email.split("@")[0];
   setAuthMessage("Creando cuenta…", "", prefix);
   setCloudStatus("connecting");
   const { data, error } = await sb.auth.signUp({
     ...credentials,
-    options: { data: { name: state.settings.name, goal: state.settings.goal } },
+    options: { data: { name, goal: state.settings.goal } },
   });
   if (error) {
     setAuthMessage(translateAuthError(error.message), "error", prefix);
@@ -892,8 +895,43 @@ async function signUp(prefix = "auth") {
   }
   setAuthMessage("", "", prefix);
   $("#" + prefix + "-password").value = "";
+  state.settings.name = name;
+  persist();
   unlockApp();
   await onSignedIn(data.session);
+}
+
+async function sendRecovery() {
+  if (!sb) return;
+  const email = $("#gate-email").value.trim();
+  if (!email || !email.includes("@")) return setAuthMessage("Escribe tu email para enviarte el enlace.", "error");
+  setAuthMessage("Enviando enlace…");
+  const { error } = await sb.auth.resetPasswordForEmail(email, {
+    redirectTo: location.origin + location.pathname,
+  });
+  if (error) return setAuthMessage(translateAuthError(error.message), "error");
+  setAuthMessage("Listo. Revisa tu correo y abre el enlace para crear una nueva contraseña.", "ok");
+}
+
+async function setNewPassword() {
+  const password = $("#gate-new-password").value;
+  if (password.length < 6) return setMsg("#gate-recovery-msg", "La contraseña debe tener al menos 6 caracteres.", "error");
+  setMsg("#gate-recovery-msg", "Guardando…");
+  const { error } = await sb.auth.updateUser({ password });
+  if (error) return setMsg("#gate-recovery-msg", translateAuthError(error.message), "error");
+  $("#gate-new-password").value = "";
+  cloud.recovery = false;
+  setMsg("#gate-recovery-msg", "");
+  toast("Contraseña actualizada");
+  unlockApp();
+}
+
+function togglePassword(button) {
+  const input = button.closest(".pw-wrap").querySelector("input");
+  const show = input.type === "password";
+  input.type = show ? "text" : "password";
+  button.textContent = show ? "Ocultar" : "Ver";
+  button.setAttribute("aria-label", show ? "Ocultar contraseña" : "Mostrar contraseña");
 }
 
 async function onSignedIn(session) {
@@ -1130,6 +1168,7 @@ function isLocked() {
 function gateMode() {
   if (!cloud.enabled) return "";
   if (!cloud.checked) return "loading";
+  if (cloud.recovery) return "recovery";
   if (!cloud.uid) return "login";
   if (isLocked()) {
     const record = readPin();
@@ -1148,16 +1187,44 @@ function renderGate() {
   gate.hidden = !mode;
   $("#gate-loading").hidden = mode !== "loading";
   $("#gate-login").hidden = mode !== "login";
+  $("#gate-recovery").hidden = mode !== "recovery";
   $("#gate-pin").hidden = mode !== "pin";
-  $("#gate-signup").hidden = Boolean(cloud.uid);
-  $("#gate-login-hint").textContent = cloud.uid
-    ? "Inicia sesión con tu contraseña para continuar."
-    : "Entra con tu email y contraseña para ver tus finanzas.";
   pinInput = "";
   updatePinDots();
   setMsg("#gate-pin-msg", "");
   setMsg("#gate-msg", "");
+  setMsg("#gate-recovery-msg", "");
+  renderLoginForm();
   if (wasOpen && !mode && !state.onboarded) openSheet("sheet-welcome");
+}
+
+function renderLoginForm() {
+  const signup = cloud.signupMode && !cloud.uid;
+  $("#gate-title").textContent = signup ? "Crea tu cuenta" : "Inicia sesión";
+  $("#gate-hint").textContent = cloud.uid
+    ? "Inicia sesión con tu contraseña para continuar."
+    : signup
+      ? "Tus finanzas quedan guardadas en tu cuenta y se sincronizan entre tus dispositivos."
+      : "Entra con tu email y contraseña para ver tus finanzas.";
+  $("#gate-name-field").hidden = !signup;
+  $("#gate-submit").textContent = signup ? "Crear cuenta" : "Entrar";
+  $("#gate-forgot").hidden = signup;
+  $("#gate-toggle").hidden = Boolean(cloud.uid);
+  $("#gate-toggle").textContent = signup ? "¿Ya tienes cuenta? Inicia sesión" : "¿No tienes cuenta? Regístrate";
+}
+
+function toggleSignupMode() {
+  cloud.signupMode = !cloud.signupMode;
+  renderLoginForm();
+  setMsg("#gate-msg", "");
+}
+
+function wrongPinFeedback() {
+  const dots = $("#pin-dots");
+  dots.classList.remove("wrong");
+  void dots.offsetWidth;
+  dots.classList.add("wrong");
+  setTimeout(() => dots.classList.remove("wrong"), 500);
 }
 
 function unlockApp() {
@@ -1215,6 +1282,7 @@ async function checkPin() {
   localStorage.setItem(pinKey(), JSON.stringify(record));
   pinBusy = false;
   const left = PIN_MAX_FAILS - record.fails;
+  wrongPinFeedback();
   renderGate();
   if (left > 0) {
     setMsg("#gate-pin-msg", `PIN incorrecto. Te quedan ${left} intentos.`, "error");
@@ -1365,26 +1433,23 @@ function initCloud() {
   }
 
   const savedEmail = localStorage.getItem("cf.lastEmail");
-  if (savedEmail) {
-    $("#auth-email").value = savedEmail;
-    $("#gate-email").value = savedEmail;
-  }
-
-  $("#auth-password").addEventListener("keydown", (event) => {
-    if (event.key === "Enter") {
-      event.preventDefault();
-      signIn();
-    }
-  });
+  if (savedEmail) $("#gate-email").value = savedEmail;
+  renderLoginForm();
 
   $("#gate-password").addEventListener("keydown", (event) => {
     if (event.key === "Enter") {
       event.preventDefault();
-      signIn("gate");
+      if (cloud.signupMode && !cloud.uid) signUp("gate");
+      else signIn("gate");
     }
   });
 
   sb.auth.onAuthStateChange((event, session) => {
+    if (event === "PASSWORD_RECOVERY") {
+      cloud.recovery = true;
+      renderGate();
+      return;
+    }
     if (event === "SIGNED_OUT") {
       onSignedOut();
       return;
@@ -1460,10 +1525,14 @@ document.addEventListener("click", (event) => {
     if (action === "prev-month") { ui.month = shiftMonth(ui.month, -1); return renderMovements(); }
     if (action === "next-month") { ui.month = shiftMonth(ui.month, 1); return renderMovements(); }
     if (action === "save-settings") return saveSettings();
-    if (action === "login") return signIn();
-    if (action === "signup") return signUp();
-    if (action === "gate-login") return signIn("gate");
-    if (action === "gate-signup") return signUp("gate");
+    if (action === "gate-submit") {
+      if (cloud.signupMode && !cloud.uid) return signUp("gate");
+      return signIn("gate");
+    }
+    if (action === "gate-toggle-mode") return toggleSignupMode();
+    if (action === "gate-forgot") return sendRecovery();
+    if (action === "gate-set-password") return setNewPassword();
+    if (action === "toggle-pw") return togglePassword(actionEl);
     if (action === "gate-password") {
       cloud.passwordFallback = true;
       return renderGate();

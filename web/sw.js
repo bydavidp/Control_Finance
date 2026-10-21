@@ -1,5 +1,5 @@
 /* Service worker: app shell offline para Control Finance. */
-const CACHE = "control-finance-v3";
+const CACHE = "control-finance-v4";
 const ASSETS = [
   "./",
   "./index.html",
