@@ -144,3 +144,6 @@ Con cuenta, los datos se guardan en **tu** proyecto de Supabase y están protegi
 ## Aviso
 
 Es una herramienta de registro personal, no asesoría financiera ni contable.
+
+## CREADO POR DAVID PALACIOS
+
