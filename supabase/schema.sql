@@ -179,6 +179,56 @@ $$;
 revoke all on function public.cf_quick_add(text, numeric, text, text, text, date) from public;
 grant execute on function public.cf_quick_add(text, numeric, text, text, text, date) to anon, authenticated;
 
+-- Resumen para el widget de Scriptable. Devuelve solo totales, nunca movimientos.
+create or replace function public.cf_quick_balance(p_token text)
+returns jsonb
+language plpgsql
+security definer
+set search_path = public, extensions
+as $$
+declare
+  v_user uuid;
+  v_name text;
+  v_month text := to_char(current_date, 'YYYY-MM');
+  v_income numeric;
+  v_expense numeric;
+  v_total numeric;
+begin
+  if p_token is null or length(p_token) < 24 then
+    raise exception 'Token inválido' using errcode = '28000';
+  end if;
+
+  select id, name into v_user, v_name
+  from public.profiles
+  where quick_token_hash = public.cf_token_hash(p_token)
+  limit 1;
+
+  if v_user is null then
+    raise exception 'Token inválido' using errcode = '28000';
+  end if;
+
+  select
+    coalesce(sum(amount) filter (where type = 'income' and to_char(date, 'YYYY-MM') = v_month), 0),
+    coalesce(sum(amount) filter (where type = 'expense' and to_char(date, 'YYYY-MM') = v_month), 0),
+    coalesce(sum(case when type = 'income' then amount else -amount end), 0)
+  into v_income, v_expense, v_total
+  from public.transactions
+  where user_id = v_user;
+
+  return jsonb_build_object(
+    'name', v_name,
+    'month', v_month,
+    'income', v_income,
+    'expense', v_expense,
+    'balance', v_income - v_expense,
+    'total', v_total
+  );
+end;
+$$;
+
+revoke all on function public.cf_quick_balance(text) from public;
+grant execute on function public.cf_quick_balance(text) to anon, authenticated;
+
 -- ---------------------------------------------------------------
 -- Realtime para sincronización instantánea
 -- ---------------------------------------------------------------

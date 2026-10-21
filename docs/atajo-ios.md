@@ -164,7 +164,7 @@ Puedes añadir los dos Atajos al Centro de Control o hacer un menú
 
 - La **anon key** es pública por diseño; no pasa nada si aparece en el Atajo.
 - **Nunca** uses la clave `service_role` en la app ni en el Atajo.
-- El token del Atajo solo permite **insertar** movimientos; no puede leer tus datos.
+- El token del Atajo permite **insertar** movimientos y leer **solo totales** (ingresos, gastos y balance). No puede listar ni modificar tus movimientos.
 - Puedes revocarlo cuando quieras generando otro.
 - El token se guarda en el Atajo y en el llavero de Atajos; protege tu iPhone.
 - Las filas están protegidas con RLS: cada usuario solo ve las suyas.

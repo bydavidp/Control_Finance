@@ -80,7 +80,7 @@ La app funciona sin nube. Para activar la sincronización y el Atajo:
 
 ## Atajo de iOS
 
-Instrucciones completas en **[docs/atajo-ios.md](docs/atajo-ios.md)**.
+Instrucciones completas en **[docs/atajo-ios.md](docs/atajo-ios.md)**. Para ver el saldo en la pantalla de inicio, sigue **[docs/widget-scriptable.md](docs/widget-scriptable.md)**.
 
 Resumen:
 
@@ -155,7 +155,7 @@ desaloja, se pierden; usa **Exportar datos** para respaldos.
 
 Con Supabase, los datos se guardan en **tu** proyecto y están protegidos con RLS:
 cada usuario solo accede a sus filas. La `anon key` es pública, pero no permite
-leer datos ajenos. El token del Atajo solo permite insertar movimientos.
+leer datos ajenos. El token del Atajo permite insertar movimientos y leer solo totales.
 
 ## Aviso
 
