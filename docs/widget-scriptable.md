@@ -7,7 +7,7 @@ Este widget muestra en tu pantalla de inicio el balance del mes, tus ingresos y 
 ## Antes de empezar
 
 - La función `cf_quick_balance` debe estar en tu proyecto. Vuelve a ejecutar `supabase/schema.sql` en el SQL Editor (es idempotente).
-- Debes tener el token del Atajo: **Perfil → Atajo de iOS → Generar token del atajo**.
+- Debes tener el token del Atajo: **Perfil → Atajo de iOS → Generar token**.
 
 ## 1. Instala Scriptable
 

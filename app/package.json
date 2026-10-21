@@ -1,0 +1,23 @@
+{
+  "name": "control-finance",
+  "version": "0.3.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "dev:test": "vite --mode test --port 5174 --strictPort",
+    "dev:offline": "vite --mode offline --port 5175 --strictPort",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit",
+    "test:e2e": "python3 tests/e2e.py"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "2.118.0"
+  },
+  "devDependencies": {
+    "typescript": "~5.9.3",
+    "vite": "^8.0.0",
+    "vite-plugin-pwa": "^2.0.0"
+  }
+}

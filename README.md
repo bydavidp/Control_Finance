@@ -1,161 +1,145 @@
 # Control Finance
 
-App de finanzas personales, **mobile-first y local-first**, para registrar ingresos
-y gastos reales, ver el balance del mes, tu meta de ahorro y en qué categorías se
-va tu dinero.
+App de finanzas personales para iPhone (y cualquier navegador moderno). Registra ingresos y gastos, muestra el balance del mes, tu meta de ahorro y en qué categorías se va tu dinero.
 
-Hecha como PWA: se instala desde Safari en iPhone (o Chrome en Android) y
-funciona sin conexión. Los datos viven en el dispositivo y, si activas la nube,
-se sincronizan con Supabase y se pueden añadir desde un **Atajo de iOS** en el
-Centro de Control.
+Es una **PWA**: se instala desde Safari, funciona sin conexión y se puede usar con o sin cuenta en la nube.
 
 **App en vivo:** <https://bydavidp.github.io/Control_Finance/>
 
-![Control Finance](docs/capturas/vista-general.png)
+## Funciones
 
-## Instalar en iPhone
+- Ingresos y gastos con monto, categoría, descripción y fecha.
+- Balance del mes, comparación con el mes anterior y gastos por semana.
+- Movimientos por mes, filtros y detalle con eliminación.
+- Meta de ahorro con progreso.
+- **Cuenta y nube (opcional):** registro con nombre, inicio de sesión, recuperación de contraseña y sincronización con Supabase.
+- **PIN de 4 dígitos** por dispositivo, con bloqueo automático al salir de la app.
+- **Atajo de iOS** para agregar gastos desde el Centro de Control.
+- **Widget de saldo** con Scriptable (ver [docs/widget-scriptable.md](docs/widget-scriptable.md)).
+- Copia de seguridad en JSON (exportar e importar).
 
-1. Abre <https://bydavidp.github.io/Control_Finance/> en **Safari**.
-2. Toca **Compartir → Añadir a pantalla de inicio**.
-3. Ábrela desde el icono: se ve a pantalla completa y funciona sin conexión.
+## Arquitectura
 
-## Funcionalidad (v0.2)
+Vite + TypeScript, sin frameworks de interfaz. Cada capa tiene una responsabilidad:
 
-- Alta de **ingresos y gastos** con monto, categoría, descripción y fecha.
-- **Balance del mes**, comparación con el mes anterior y desglose de ingresos/gastos.
-- **Movimientos por mes** (navegación ‹ ›), filtros y detalle con eliminación.
-- **Gastos por semana** calculados con datos reales.
-- **Meta de ahorro** configurable y progreso.
-- **Perfil**: nombre, meta, estadísticas, exportar/importar JSON y borrado total.
-- **Cuenta y nube (opcional)**: email + contraseña, sincronización con Supabase,
-  cola local para cambios sin conexión y actualización automática.
-- **Atajo de iOS**: añade gastos desde el Centro de Control o un widget de Atajos.
-- PWA instalable y con app shell offline.
-
-## Stack
-
-- HTML + CSS + JavaScript vanilla (sin build).
-- `localStorage` versionado (`controlfinance.v1`) como caché y modo local.
-- [Supabase](https://supabase.com/) para auth, Postgres, RLS y Realtime.
-- `@supabase/supabase-js` alojado en `web/vendor/supabase.js` (sin CDN).
-- Service worker para uso offline.
-- GitHub Pages + GitHub Actions para despliegue.
-
-## Conectar la nube (Supabase)
-
-La app funciona sin nube. Para activar la sincronización y el Atajo:
-
-1. Crea un proyecto gratuito en <https://supabase.com/>.
-2. En **SQL Editor → New query**, copia todo `supabase/schema.sql` y ejecuta **Run**.
-   Crea perfiles, movimientos, RLS, el RPC `cf_quick_add` y Realtime.
-3. En **Authentication → URL Configuration**, pon como **Site URL** la URL de la
-   app (`https://bydavidp.github.io/Control_Finance/`).
-4. Para evitar fricción, desactiva **Authentication → Sign In / Providers → Email
-   → Confirm email**. Si lo dejas activo, confirma el correo antes de entrar.
-5. Copia **Project URL** y **anon public key** en `web/config.js`:
-
-   ```js
-   window.CF_CONFIG = {
-     supabaseUrl: "https://TU-PROYECTO.supabase.co",
-     supabaseAnonKey: "eyJ...",
-   };
-   ```
-
-6. Despliega. En la app: **Perfil → Cuenta y nube → Crear cuenta**.
-7. Genera el token del Atajo y sigue [docs/atajo-ios.md](docs/atajo-ios.md).
-
-> La **anon key** es pública por diseño: la seguridad real está en RLS. Nunca
-> pongas la clave `service_role` en `web/config.js` ni en el Atajo.
-
-### Cómo funciona la sincronización
-
-- La nube es la fuente de verdad cuando hay sesión; `localStorage` es caché y
-  fallback sin conexión.
-- Cada alta, borrado o cambio de ajustes se encola y se envía a Supabase.
-- Al volver a abrir o recuperar conexión, se reintenta la cola y se descargan los
-  cambios.
-- La app consulta cambios al abrir, al volver a primer plano y cada 30 segundos;
-  con Realtime configurado, también al instante.
-- El Atajo inserta con un token revocable que **solo puede agregar**, no leer.
-
-## Atajo de iOS
-
-Instrucciones completas en **[docs/atajo-ios.md](docs/atajo-ios.md)**. Para ver el saldo en la pantalla de inicio, sigue **[docs/widget-scriptable.md](docs/widget-scriptable.md)**.
-
-Resumen:
-
-1. En la app: **Perfil → Atajo de iOS → Generar token** y cópialo.
-2. En **Atajos**, crea uno con: pedir monto → elegir categoría → **Obtener
-   contenido de URL** (POST a `/rest/v1/rpc/cf_quick_add`) → notificación.
-3. Añádelo al **Centro de Control** (iOS 18+) o a un **widget de Atajos**.
-
-## Desarrollo local
-
-```bash
-cd web
-python3 -m http.server 8000
+```
+app/
+├── index.html              Estructura de pantallas, hojas y acceso
+├── vite.config.ts          Build, base de GitHub Pages y PWA
+├── .env                    Claves públicas de Supabase (publishable key)
+├── src/
+│   ├── main.ts             Arranque
+│   ├── events.ts           Eventos de la interfaz (delegación)
+│   ├── controller.ts       Acciones de usuario (guardar, borrar, exportar…)
+│   ├── render.ts           Dibuja la interfaz a partir del estado
+│   ├── lifecycle.ts        Sincronización periódica, bloqueo y conexión
+│   ├── domain/             Tipos, formato y cálculos (funciones puras)
+│   ├── store/              Estado, persistencia en localStorage y migración
+│   ├── cloud/              Cliente Supabase, cola de sincronización, tokens
+│   ├── auth/               Sesión, recuperación, PIN y pantalla de acceso
+│   ├── ui/                 Componentes: hojas, acceso, iconos y avisos
+│   ├── views/              Inicio, movimientos y perfil
+│   └── styles/             Tokens de diseño, base, componentes y pantallas
+└── tests/                  Pruebas de extremo a extremo (Selenium)
 ```
 
-Abre `http://localhost:8000`. Para probar en el teléfono dentro de la misma Wi-Fi,
-usa la IP del equipo. Sin claves en `web/config.js`, la app arranca en modo local.
+### Diseño visual
 
-Parámetros útiles:
+- Tokens de color, espaciado y radios en `src/styles/tokens.css`.
+- **Tema claro y oscuro** según la configuración del sistema del iPhone.
+- Números con cifras tabulares, áreas seguras de iPhone y campos de 16 px para que iOS no haga zoom.
 
-| URL | Efecto |
-|---|---|
-| `?demo=1` | Carga datos de ejemplo si no hay datos guardados |
-| `?tab=movimientos` | Abre una pestaña concreta |
-| `?static=1` | Desactiva animaciones (capturas) |
+### Datos
 
-## Tests manuales rápidos
+- El estado vive en `localStorage` con la clave `controlfinance.v1`. Es la fuente de verdad sin cuenta y la caché con cuenta.
+- Con cuenta, los cambios se encolan y se envían a Supabase. Si no hay conexión, se reintentan al volver.
+- Los datos de versiones anteriores se conservan: la clave y el formato no cambiaron.
 
-**Modo local**
+## Desarrollo
 
-1. Primer arranque: aparece la bienvenida.
-2. «Probar con datos de ejemplo» → balance y lista con datos.
-3. Añadir gasto → el balance baja y el movimiento aparece.
-4. Recargar → los datos siguen ahí (localStorage).
-5. Filtros Ingresos/Gastos, navegación de meses y borrar movimiento.
-6. Exportar JSON → importarlo en otro navegador.
+Requisitos: Node 22 o superior.
 
-**Nube**
+```bash
+cd app
+npm install
+npm run dev          # servidor local con los datos reales de Supabase
+npm run typecheck    # revisa tipos
+npm run build        # verifica tipos y genera dist/
+```
 
-1. Crear cuenta → el badge pasa a **NUBE** y los datos locales se suben.
-2. Añadir/borrar un movimiento → se refleja en Supabase.
-3. Generar token → ejecutar el Atajo → **Sincronizar ahora** → aparece.
-4. Recargar → la sesión sigue y los datos se descargan.
-5. Cerrar sesión → badge **LOCAL**; volver a entrar → datos de la nube.
+Para trabajar sin nube, usa `npm run dev:offline` (puerto 5175).
+
+## Pruebas
+
+Las pruebas de extremo a extremo usan un mock de Supabase y Chromium con Selenium:
+
+```bash
+# Terminal 1: mock de Supabase
+python3 app/tests/mock_supabase.py
+
+# Terminal 2: app con nube simulada
+cd app && npm run dev:test
+
+# Terminal 3: app sin nube
+cd app && npm run dev:offline
+
+# Terminal 4: pruebas
+cd app && python3 tests/e2e.py
+```
+
+Las pruebas cubren registro con nombre, mostrar contraseña, alta, filtros, meses, eliminación, ajustes, PIN, recuperación, layout en tres tamaños y modo sin nube.
+
+## Configurar la nube (Supabase)
+
+La app funciona sin nube. Para activarla:
+
+1. Crea un proyecto gratuito en <https://supabase.com/>.
+2. En **SQL Editor → New query**, pega todo `supabase/schema.sql` y ejecuta **Run**. Es idempotente.
+3. En **Authentication → Sign In / Providers → Email**, deja el proveedor **activado**. Si quieres entrar sin confirmar el correo, desactiva **Confirm email**.
+4. En **Authentication → URL Configuration**:
+   - **Site URL:** `https://bydavidp.github.io/Control_Finance/`
+   - **Redirect URLs:** agrega la misma dirección. Así funciona el enlace de recuperación.
+5. Copia **Project URL** y **publishable key** en `app/.env`:
+
+   ```
+   VITE_SUPABASE_URL=https://TU-PROYECTO.supabase.co
+   VITE_SUPABASE_ANON_KEY=sb_publishable_...
+   ```
+
+La clave publicable es pública por diseño: la seguridad real está en las reglas RLS del esquema. **Nunca** pongas la clave `service_role` en la app ni en el Atajo.
+
+## Acceso: sesión, recuperación y PIN
+
+- **Iniciar sesión** con email y contraseña. La sesión se conserva en el dispositivo.
+- **Crear cuenta** pide tu nombre, que se usa en el saludo.
+- **¿Olvidaste tu contraseña?** envía un enlace al correo. Al abrirlo, eliges una contraseña nueva.
+- **PIN de 4 dígitos** (Perfil → Bloqueo con PIN): se pide al abrir la app y después de un minuto en segundo plano. Se guarda cifrado en el dispositivo. Tras 5 intentos fallidos, pide la contraseña.
+
+## Atajo de iOS y widget
+
+- Atajo para el Centro de Control y la pantalla de inicio: [docs/atajo-ios.md](docs/atajo-ios.md).
+- Widget de saldo con Scriptable: [docs/widget-scriptable.md](docs/widget-scriptable.md).
+
+Una PWA no puede instalar widgets nativos de iOS. Para eso haría falta una app nativa en SwiftUI.
 
 ## Despliegue
 
-El workflow `.github/workflows/pages.yml` publica `web/` en GitHub Pages en cada
-push a `main`.
+El workflow `.github/workflows/pages.yml` instala dependencias, verifica tipos, construye `app/` y publica `app/dist` en GitHub Pages en cada push a `main`.
 
-1. En GitHub: **Settings → Pages → Build and deployment → Source: GitHub Actions**.
-2. Push a `main`.
-3. La app queda en `https://bydavidp.github.io/Control_Finance/`.
-
-HTTPS es necesario para que funcionen el service worker, la instalación como PWA
-y la generación del token del Atajo.
-
-## Hoja de ruta
-
-- [x] **v0.2** — Cuenta, sincronización con Supabase y Atajo de iOS.
-- [ ] **v0.3** — Presupuestos por categoría, movimientos recurrentes y búsqueda.
-- [ ] **v0.4** — Open finance en Colombia con Belvo (conexión bancaria) y
-      conciliación automática.
-- [ ] **v1.0** — Multimoneda, informes exportables y widget nativo (requiere app
-      SwiftUI; el Atajo ya cubre el acceso rápido).
+En GitHub: **Settings → Pages → Source: GitHub Actions**.
 
 ## Privacidad
 
-Sin configurar Supabase, la app no envía datos a ningún servidor: todo se guarda
-en el navegador del dispositivo. Si borras los datos del sitio o el navegador los
-desaloja, se pierden; usa **Exportar datos** para respaldos.
+Sin cuenta, la app no envía datos a ningún servidor: todo queda en el navegador del dispositivo. Si borras los datos del sitio, se pierden; usa **Exportar copia de seguridad** para respaldos.
 
-Con Supabase, los datos se guardan en **tu** proyecto y están protegidos con RLS:
-cada usuario solo accede a sus filas. La `anon key` es pública, pero no permite
-leer datos ajenos. El token del Atajo permite insertar movimientos y leer solo totales.
+Con cuenta, los datos se guardan en **tu** proyecto de Supabase y están protegidos con RLS: cada usuario solo accede a sus filas. El token del Atajo permite insertar movimientos y leer totales; no permite listar ni modificar movimientos.
+
+## Hoja de ruta
+
+- [ ] Presupuestos por categoría.
+- [ ] Movimientos recurrentes y búsqueda.
+- [ ] Open finance en Colombia con Belvo (conciliación bancaria).
+- [ ] Widget nativo con WidgetKit (requiere app SwiftUI).
 
 ## Aviso
 

@@ -20,3 +20,6 @@ npm-debug.log*
 # Salidas de build
 dist/
 *.zip
+
+# Pruebas
+app/tests/shots/

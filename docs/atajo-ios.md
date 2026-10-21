@@ -14,13 +14,13 @@ la categoría, envía el movimiento a Supabase y la PWA lo muestra al sincroniza
   el widget de Atajos o Siri.
 - La app instalada en la pantalla de inicio.
 - El proyecto de Supabase configurado y el esquema `supabase/schema.sql` ejecutado.
-- Una cuenta creada dentro de la app (Perfil → Cuenta y nube).
+- Una cuenta creada dentro de la app.
 
 ## 1. Crea tu cuenta en la app
 
-1. Abre **Control Finance**.
-2. Ve a **Perfil → Cuenta y nube**.
-3. Escribe tu email y una contraseña (mínimo 6 caracteres).
+1. Abre **Control Finance**. Verás la pantalla de acceso.
+2. Toca **¿No tienes cuenta? Regístrate**.
+3. Escribe tu nombre, tu email y una contraseña (mínimo 6 caracteres).
 4. Toca **Crear cuenta**.
 5. Si Supabase tiene la confirmación de correo activada, confirma el email y
    vuelve a entrar con **Entrar**.
@@ -30,7 +30,7 @@ Tus movimientos locales se suben a la nube la primera vez que entras.
 ## 2. Genera el token del Atajo
 
 1. En **Perfil**, baja hasta **Atajo de iOS**.
-2. Toca **Generar token del atajo**.
+2. Toca **Generar token**.
 3. Toca **Copiar token**.
 
 El token es un secreto de solo inserción: sirve para agregar movimientos, no para
@@ -110,7 +110,7 @@ Añade **Mostrar notificación** con el texto `Gasto guardado`.
 1. Ejecuta el Atajo.
 2. Escribe `25000`, elige `Comida`.
 3. Debe aparecer la notificación.
-4. Abre la app → **Perfil → Sincronizar ahora** (o espera: la app sincroniza al
+4. Abre la app → **Perfil → Cuenta y nube → Sincronizar** (o espera: la app sincroniza al
    abrir y cada 30 segundos mientras está visible).
 
 ## 4. Añádelo al Centro de Control o a la pantalla de inicio
@@ -155,7 +155,7 @@ Puedes añadir los dos Atajos al Centro de Control o hacer un menú
 | `Token inválido` o 401 | El token no coincide. Genera uno nuevo en la app y actualízalo en el Atajo. |
 | `Monto inválido` o 400 | `p_amount` debe ser mayor que 0 y numérico. |
 | 404 | La URL debe terminar en `/rest/v1/rpc/cf_quick_add`. |
-| No aparece en la app | Abre la app y toca **Sincronizar ahora**; revisa internet. |
+| No aparece en la app | Abre la app y toca **Sincronizar**; revisa internet. |
 | El Atajo funciona pero la app está cerrada | Es normal: se sincroniza al abrirla. |
 | Cambié el token y dejó de funcionar | Vuelve a copiar el token nuevo en el Atajo. |
 | La app se reinstaló y no veo el token | Inicia sesión y genera uno nuevo; el anterior queda invalidado. |

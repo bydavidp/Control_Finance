@@ -1,0 +1,422 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#0B0D12" media="(prefers-color-scheme: dark)" />
+  <meta name="theme-color" content="#F4F6FA" media="(prefers-color-scheme: light)" />
+  <meta name="color-scheme" content="dark light" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="Control Finance" />
+  <meta name="format-detection" content="telephone=no" />
+  <meta name="description" content="Control Finance: tus finanzas personales, claras y privadas." />
+  <title>Control Finance</title>
+  <link rel="icon" href="icon-192.png" />
+  <link rel="apple-touch-icon" href="icon-180.png" />
+</head>
+<body>
+  <div class="app" id="app">
+    <main class="main" id="main">
+
+      <!-- ============ INICIO ============ -->
+      <section class="screen" id="screen-home" data-screen="home">
+        <header class="topbar">
+          <div class="hello">
+            <p class="eyebrow" id="greeting">Hola</p>
+            <h1 id="user-name">David</h1>
+          </div>
+          <button class="avatar-btn" data-action="tab" data-tab="perfil" aria-label="Ir a perfil">
+            <span id="avatar">D</span>
+          </button>
+        </header>
+
+        <article class="balance" data-action="tab" data-tab="movimientos" role="button" tabindex="0" aria-label="Ver movimientos">
+          <div class="balance-head">
+            <span class="balance-label" id="hero-label">Balance del mes</span>
+            <span class="trend" id="trend">—</span>
+          </div>
+          <p class="balance-amount" id="balance">$ 0</p>
+          <div class="balance-foot">
+            <span class="balance-sub" id="trend-sub">Sin datos del mes anterior</span>
+            <svg class="spark" id="spark" viewBox="0 0 150 44" aria-hidden="true">
+              <path id="spark-path" d="M2 40 L148 40" />
+              <circle id="spark-dot" cx="148" cy="40" r="3" />
+            </svg>
+          </div>
+        </article>
+
+        <div class="quick">
+          <button class="quick-btn" data-action="add" data-type="expense">
+            <span class="quick-ico quick-ico--out" data-icon="arrowDown"></span>
+            <span>Gasto</span>
+          </button>
+          <button class="quick-btn" data-action="add" data-type="income">
+            <span class="quick-ico quick-ico--in" data-icon="arrowUp"></span>
+            <span>Ingreso</span>
+          </button>
+          <button class="quick-btn" data-action="tab" data-tab="movimientos">
+            <span class="quick-ico" data-icon="chart"></span>
+            <span>Historial</span>
+          </button>
+        </div>
+
+        <div class="section-head">
+          <h2>Recientes</h2>
+          <button class="link" data-action="tab" data-tab="movimientos">Ver todo</button>
+        </div>
+        <div class="card list" id="home-list"></div>
+        <div class="empty" id="home-empty" hidden>
+          <p>Aún no tienes movimientos este mes.</p>
+          <button class="link" data-action="add" data-type="expense">Registra el primero</button>
+        </div>
+
+        <section class="card goal">
+          <div class="row">
+            <div class="row-title"><span class="ico" data-icon="target"></span><strong>Meta de ahorro</strong></div>
+            <span class="muted tabular" id="goal-values">$ 0 / $ 0</span>
+          </div>
+          <div class="progress" role="progressbar" aria-label="Progreso de la meta">
+            <span id="goal-bar"></span>
+          </div>
+          <p class="caption" id="goal-caption">Define tu meta en Perfil</p>
+        </section>
+
+        <section class="card insight">
+          <span class="ico insight-ico" id="insight-icon" data-icon="spark"></span>
+          <div class="insight-body">
+            <p class="insight-title" id="insight-title">Sin gastos este mes</p>
+            <p class="caption" id="insight-text">Añade un gasto para ver en qué se va tu dinero.</p>
+          </div>
+        </section>
+      </section>
+
+      <!-- ============ MOVIMIENTOS ============ -->
+      <section class="screen" id="screen-movimientos" data-screen="movimientos">
+        <header class="topbar">
+          <h1>Movimientos</h1>
+          <div class="month-nav">
+            <button data-action="prev-month" aria-label="Mes anterior" data-icon="chevronLeft"></button>
+            <span id="month-label">—</span>
+            <button data-action="next-month" aria-label="Mes siguiente" id="next-month" data-icon="chevronRight"></button>
+          </div>
+        </header>
+
+        <div class="segmented" role="tablist" aria-label="Filtrar movimientos">
+          <button role="tab" class="seg-btn active" data-filter="Todas">Todas</button>
+          <button role="tab" class="seg-btn" data-filter="Ingresos">Ingresos</button>
+          <button role="tab" class="seg-btn" data-filter="Gastos">Gastos</button>
+        </div>
+
+        <div class="summary">
+          <div class="card stat-card">
+            <span class="stat-label"><span class="dot dot--in"></span>Ingresos</span>
+            <strong class="tabular income" id="sum-in">$ 0</strong>
+          </div>
+          <div class="card stat-card">
+            <span class="stat-label"><span class="dot dot--out"></span>Gastos</span>
+            <strong class="tabular expense" id="sum-out">$ 0</strong>
+          </div>
+        </div>
+
+        <section class="card chart-card">
+          <div class="row">
+            <div>
+              <strong>Gastos por semana</strong>
+              <p class="caption" id="chart-sub">Sin gastos este mes</p>
+            </div>
+            <span class="tabular expense" id="chart-total">$ 0</span>
+          </div>
+          <div class="chart" id="chart">
+            <div class="bars" id="bars"></div>
+            <div class="days" id="days"></div>
+          </div>
+        </section>
+
+        <div class="section-head">
+          <h2>Detalle</h2>
+          <span class="caption" id="count">0 registros</span>
+        </div>
+        <div id="activity-list"></div>
+        <div class="empty" id="activity-empty" hidden>
+          <p>No hay movimientos en este mes.</p>
+          <button class="link" data-action="add" data-type="expense">Añadir uno</button>
+        </div>
+      </section>
+
+      <!-- ============ PERFIL ============ -->
+      <section class="screen" id="screen-perfil" data-screen="perfil">
+        <header class="topbar">
+          <h1>Perfil</h1>
+          <span class="status-pill" id="cloud-badge">Local</span>
+        </header>
+
+        <div class="card identity">
+          <div class="avatar avatar--lg" id="avatar-lg">D</div>
+          <div class="identity-body">
+            <h2 id="profile-name">David</h2>
+            <p class="caption" id="profile-sub">Datos guardados en este dispositivo</p>
+          </div>
+        </div>
+
+        <div class="stats">
+          <div class="card stat"><strong class="tabular" id="stat-tx">0</strong><span>Movimientos</span></div>
+          <div class="card stat"><strong class="tabular" id="stat-months">0</strong><span>Meses</span></div>
+          <div class="card stat"><strong class="tabular" id="stat-saved">$ 0</strong><span>Balance total</span></div>
+        </div>
+
+        <section class="card" id="account-card" hidden>
+          <div class="row">
+            <div class="row-title"><span class="ico" data-icon="cloud"></span><strong>Cuenta y nube</strong></div>
+            <span class="status-pill" id="account-status">Local</span>
+          </div>
+          <p class="caption" id="account-email"></p>
+          <p class="caption" id="sync-info">—</p>
+          <div class="btn-row">
+            <button class="btn secondary" data-action="sync-now">Sincronizar</button>
+            <button class="btn ghost" data-action="logout">Cerrar sesión</button>
+          </div>
+        </section>
+
+        <section class="card" id="pin-card" hidden>
+          <div class="row">
+            <div class="row-title"><span class="ico" data-icon="lock"></span><strong>Bloqueo con PIN</strong></div>
+            <span class="status-pill" id="pin-status">Desactivado</span>
+          </div>
+          <p class="caption">Pide un PIN de 4 números al abrir la app en este dispositivo. Tu sesión sigue iniciada.</p>
+          <form class="form" id="pin-form" autocomplete="off">
+            <label class="field">
+              <span>PIN (4 números)</span>
+              <input id="pin-new" type="password" inputmode="numeric" maxlength="4" autocomplete="new-password" />
+            </label>
+            <label class="field">
+              <span>Repite el PIN</span>
+              <input id="pin-confirm" type="password" inputmode="numeric" maxlength="4" autocomplete="new-password" />
+            </label>
+          </form>
+          <div class="btn-row">
+            <button class="btn primary" data-action="save-pin" id="pin-save">Activar PIN</button>
+            <button class="btn ghost" data-action="remove-pin" id="pin-remove" hidden>Quitar PIN</button>
+          </div>
+          <p class="msg" id="pin-msg" role="status"></p>
+        </section>
+
+        <section class="card" id="quick-card" hidden>
+          <div class="row">
+            <div class="row-title"><span class="ico" data-icon="bolt"></span><strong>Atajo de iOS</strong></div>
+            <span class="status-pill status-pill--accent">Beta</span>
+          </div>
+          <p class="caption">Agrega gastos desde el Centro de Control sin abrir la app. Guía en <code>docs/atajo-ios.md</code>.</p>
+          <div class="btn-row">
+            <button class="btn secondary" data-action="gen-token" id="gen-token">Generar token</button>
+          </div>
+          <div id="quick-token-box" hidden>
+            <label class="field">
+              <span>Token (si lo pierdes, genera otro)</span>
+              <input id="quick-token" readonly />
+            </label>
+            <div class="btn-row">
+              <button class="btn secondary" data-action="copy-token">Copiar token</button>
+              <button class="btn ghost" data-action="copy-shortcut">Copiar configuración</button>
+            </div>
+          </div>
+          <p class="msg" id="quick-msg" role="status"></p>
+        </section>
+
+        <section class="card">
+          <div class="row-title"><span class="ico" data-icon="user"></span><strong>Ajustes</strong></div>
+          <form class="form" id="settings-form" autocomplete="off">
+            <label class="field">
+              <span>Tu nombre</span>
+              <input id="input-name" maxlength="24" autocomplete="name" placeholder="Tu nombre" />
+            </label>
+            <label class="field">
+              <span>Meta de ahorro (COP)</span>
+              <input id="input-goal" type="number" inputmode="numeric" min="0" step="50000" placeholder="2000000" />
+            </label>
+          </form>
+          <button class="btn primary" data-action="save-settings">Guardar cambios</button>
+        </section>
+
+        <section class="card list-card">
+          <button class="data-row" data-action="export">
+            <span class="ico" data-icon="download"></span>
+            <span>Exportar copia de seguridad</span>
+            <span class="chev" data-icon="chevronRight"></span>
+          </button>
+          <button class="data-row" data-action="import">
+            <span class="ico" data-icon="upload"></span>
+            <span>Importar copia</span>
+            <span class="chev" data-icon="chevronRight"></span>
+          </button>
+          <button class="data-row danger" data-action="reset">
+            <span class="ico" data-icon="trash"></span>
+            <span>Borrar todos los datos</span>
+            <span class="chev" data-icon="chevronRight"></span>
+          </button>
+          <input type="file" id="import-file" accept="application/json,.json" hidden />
+        </section>
+
+        <p class="version">Control Finance 0.3 · COP</p>
+      </section>
+    </main>
+
+    <nav class="tabbar" aria-label="Navegación principal">
+      <button class="tab" data-action="tab" data-tab="home" aria-label="Inicio">
+        <span class="tab-ico" data-icon="home"></span><span class="tab-label">Inicio</span>
+      </button>
+      <button class="tab" data-action="tab" data-tab="movimientos" aria-label="Movimientos">
+        <span class="tab-ico" data-icon="chart"></span><span class="tab-label">Movimientos</span>
+      </button>
+      <button class="tab-fab" data-action="add" data-type="expense" aria-label="Agregar movimiento">
+        <span data-icon="plus"></span>
+      </button>
+      <button class="tab" data-action="tab" data-tab="perfil" aria-label="Perfil">
+        <span class="tab-ico" data-icon="user"></span><span class="tab-label">Perfil</span>
+      </button>
+    </nav>
+  </div>
+
+  <!-- ============ ACCESO: SESIÓN Y PIN ============ -->
+  <div class="gate" id="gate" hidden>
+    <div class="gate-card">
+      <div class="brand-mark">CF</div>
+
+      <p class="caption center" id="gate-loading" hidden>Cargando…</p>
+
+      <div id="gate-login" hidden>
+        <h2 class="gate-title" id="gate-title">Inicia sesión</h2>
+        <p class="caption center" id="gate-hint">Entra con tu email y contraseña para ver tus finanzas.</p>
+        <form class="form" id="gate-form" autocomplete="on">
+          <label class="field" id="gate-name-field" hidden>
+            <span>¿Cómo te llamas?</span>
+            <input id="gate-name" maxlength="24" autocomplete="given-name" placeholder="Ej. Ana" />
+          </label>
+          <label class="field">
+            <span>Email</span>
+            <input id="gate-email" name="email" type="email" inputmode="email" autocomplete="username" autocapitalize="none" autocorrect="off" spellcheck="false" placeholder="tu@email.com" />
+          </label>
+          <label class="field">
+            <span>Contraseña</span>
+            <div class="pw-wrap">
+              <input id="gate-password" name="password" type="password" autocomplete="current-password" placeholder="Mínimo 6 caracteres" />
+              <button type="button" class="pw-toggle" data-action="toggle-pw" aria-label="Mostrar contraseña">Ver</button>
+            </div>
+          </label>
+        </form>
+        <button class="btn primary" data-action="gate-submit" id="gate-submit">Entrar</button>
+        <button class="btn ghost" data-action="gate-forgot" id="gate-forgot">¿Olvidaste tu contraseña?</button>
+        <button class="btn ghost" data-action="gate-toggle-mode" id="gate-toggle">¿No tienes cuenta? Regístrate</button>
+        <p class="msg center" id="gate-msg" role="status"></p>
+      </div>
+
+      <div id="gate-recovery" hidden>
+        <h2 class="gate-title">Nueva contraseña</h2>
+        <p class="caption center">Escribe una contraseña nueva para tu cuenta.</p>
+        <form class="form" id="recovery-form" autocomplete="off">
+          <label class="field">
+            <span>Contraseña nueva</span>
+            <div class="pw-wrap">
+              <input id="gate-new-password" name="new-password" type="password" autocomplete="new-password" placeholder="Mínimo 6 caracteres" />
+              <button type="button" class="pw-toggle" data-action="toggle-pw" aria-label="Mostrar contraseña">Ver</button>
+            </div>
+          </label>
+        </form>
+        <button class="btn primary" data-action="gate-set-password">Guardar contraseña</button>
+        <p class="msg center" id="gate-recovery-msg" role="status"></p>
+      </div>
+
+      <div id="gate-pin" hidden>
+        <h2 class="gate-title">Ingresa tu PIN</h2>
+        <div class="pin-dots" id="pin-dots" aria-live="polite"><span></span><span></span><span></span><span></span></div>
+        <p class="msg center" id="gate-pin-msg" role="status"></p>
+        <div class="pin-pad">
+          <button data-action="pin-key" data-key="1">1</button>
+          <button data-action="pin-key" data-key="2">2</button>
+          <button data-action="pin-key" data-key="3">3</button>
+          <button data-action="pin-key" data-key="4">4</button>
+          <button data-action="pin-key" data-key="5">5</button>
+          <button data-action="pin-key" data-key="6">6</button>
+          <button data-action="pin-key" data-key="7">7</button>
+          <button data-action="pin-key" data-key="8">8</button>
+          <button data-action="pin-key" data-key="9">9</button>
+          <span></span>
+          <button data-action="pin-key" data-key="0">0</button>
+          <button data-action="pin-key" data-key="back" aria-label="Borrar" data-icon="backspace"></button>
+        </div>
+        <button class="btn ghost" data-action="gate-password">Usar contraseña</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ HOJAS ============ -->
+  <div class="backdrop" id="backdrop" data-action="close-sheet" hidden></div>
+
+  <div class="sheet" id="sheet-add" role="dialog" aria-modal="true" aria-labelledby="add-title" hidden>
+    <div class="grab"></div>
+    <div class="sheet-head">
+      <h2 class="sheet-title" id="add-title">Nuevo gasto</h2>
+      <button class="icon-btn" data-action="close-sheet" aria-label="Cerrar" data-icon="x"></button>
+    </div>
+
+    <div class="segmented" id="type-seg">
+      <button class="seg-btn active" data-type="expense">Gasto</button>
+      <button class="seg-btn" data-type="income">Ingreso</button>
+    </div>
+
+    <label class="amount">
+      <span>$</span>
+      <input id="f-amount" type="number" inputmode="decimal" min="0" step="100" placeholder="0" aria-label="Monto" />
+    </label>
+
+    <label class="field">
+      <span>Descripción</span>
+      <input id="f-note" maxlength="40" placeholder="Ej. Almuerzo" autocomplete="off" />
+    </label>
+
+    <div class="field-label">Categoría</div>
+    <div class="cats" id="cats"></div>
+
+    <label class="field">
+      <span>Fecha</span>
+      <input id="f-date" type="date" />
+    </label>
+
+    <button class="btn primary" data-action="save-tx">Guardar movimiento</button>
+    <button class="btn ghost" data-action="close-sheet">Cancelar</button>
+  </div>
+
+  <div class="sheet sheet--auto" id="sheet-detail" role="dialog" aria-modal="true" aria-labelledby="d-meta" hidden>
+    <div class="grab"></div>
+    <div class="detail-top">
+      <span class="tx-ico" id="d-icon">E</span>
+      <div class="detail-main">
+        <p class="detail-amount tabular" id="d-amount">$ 0</p>
+        <p class="caption" id="d-meta">—</p>
+      </div>
+    </div>
+    <div class="detail-rows">
+      <div class="detail-row"><span>Categoría</span><strong id="d-cat">—</strong></div>
+      <div class="detail-row"><span>Fecha</span><strong id="d-date">—</strong></div>
+      <div class="detail-row"><span>Tipo</span><strong id="d-type">—</strong></div>
+    </div>
+    <button class="btn danger" data-action="delete-tx">Eliminar movimiento</button>
+    <button class="btn ghost" data-action="close-sheet">Cerrar</button>
+  </div>
+
+  <div class="sheet" id="sheet-welcome" role="dialog" aria-modal="true" aria-labelledby="welcome-title" hidden>
+    <div class="grab"></div>
+    <div class="brand-mark">CF</div>
+    <h2 class="gate-title" id="welcome-title">Bienvenido a Control Finance</h2>
+    <p class="caption">Registra tus ingresos y gastos y mira a dónde se va tu dinero cada mes. Todo queda guardado en tu dispositivo.</p>
+    <button class="btn primary" data-action="welcome-start">Añadir mi primer movimiento</button>
+    <button class="btn secondary" data-action="welcome-demo">Probar con datos de ejemplo</button>
+    <button class="btn ghost" data-action="welcome-blank">Empezar en blanco</button>
+  </div>
+
+  <div class="toast" id="toast" role="status" hidden></div>
+
+  <script type="module" src="/src/main.ts"></script>
+</body>
+</html>
