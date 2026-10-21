@@ -1,0 +1,22 @@
+# Sistema
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editores
+.vscode/
+.idea/
+
+# Python / servidores locales
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Node (por si se añade tooling)
+node_modules/
+npm-debug.log*
+
+# Salidas de build
+dist/
+*.zip
