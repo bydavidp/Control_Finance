@@ -8,7 +8,15 @@ Hecha como PWA: se instala desde Safari en iPhone (o Chrome en Android) y
 funciona sin conexión. Los datos viven en el dispositivo y se pueden exportar
 o importar en JSON.
 
+**App en vivo:** <https://bydavidp.github.io/Control_Finance/>
+
 ![Control Finance](docs/capturas/vista-general.png)
+
+## Instalar en iPhone
+
+1. Abre <https://bydavidp.github.io/Control_Finance/> en **Safari**.
+2. Toca **Compartir → Añadir a pantalla de inicio**.
+3. Ábrela desde el icono: se ve a pantalla completa y funciona sin conexión.
 
 ## Funcionalidad (v0.1)
 
