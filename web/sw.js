@@ -1,10 +1,12 @@
 /* Service worker: app shell offline para Control Finance. */
-const CACHE = "control-finance-v1";
+const CACHE = "control-finance-v3";
 const ASSETS = [
   "./",
   "./index.html",
   "./styles.css",
   "./app.js",
+  "./config.js",
+  "./vendor/supabase.js",
   "./manifest.webmanifest",
   "./icon-180.png",
   "./icon-192.png",
@@ -41,6 +43,20 @@ self.addEventListener("fetch", (event) => {
           return response;
         })
         .catch(() => caches.match("./index.html"))
+    );
+    return;
+  }
+
+  // La config cambia al conectar Supabase: red primero, caché como respaldo.
+  if (new URL(request.url).pathname.endsWith("/config.js")) {
+    event.respondWith(
+      fetch(request)
+        .then((response) => {
+          const copy = response.clone();
+          caches.open(CACHE).then((cache) => cache.put(request, copy));
+          return response;
+        })
+        .catch(() => caches.match(request))
     );
     return;
   }

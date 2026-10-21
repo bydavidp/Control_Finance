@@ -278,3 +278,40 @@ body.static .bar{animation:none !important}
   #screen-movimientos .topbar h1{font-size:21px}
   .month-nav span{min-width:70px;font-size:11px}
 }
+
+/* ---------- cuenta y nube ---------- */
+.account-card,.quick-card{padding:14px;margin-top:14px}
+.account-card .field{margin-top:12px;margin-bottom:10px}
+.auth-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:2px}
+.auth-actions .btn{margin:0;padding:12px;font-size:13.5px}
+.auth-msg{min-height:16px;margin-top:8px;font-size:11px;color:var(--muted)}
+.auth-msg.error{color:var(--red)}
+.auth-msg.ok{color:var(--green)}
+.quick-card .btn.secondary{margin-top:10px;padding:11px;font-size:13px}
+#quick-token{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px}
+.steps-box{margin-top:10px;border-top:1px solid var(--border);padding-top:10px}
+.steps-box summary{cursor:pointer;color:var(--accent);font-size:12.5px;font-weight:600}
+.steps{margin:10px 0 0 18px;padding:0;color:var(--muted);font-size:12px;line-height:1.65}
+.steps li{margin-bottom:6px}
+.steps code,.quick-card code{background:#0F151E;border:1px solid var(--border);border-radius:5px;padding:1px 4px;font-size:10.5px;color:#BFD3FF}
+.badge--sync{background:#10243D;color:#7FB1FF}
+.badge--warn{background:#2B2210;color:var(--yellow)}
+.badge--error{background:#2B1218;color:var(--red)}
+
+/* Acceso: sesión y PIN */
+.gate{position:fixed;inset:0;z-index:60;display:grid;place-items:center;padding:24px;background:#0A0E14}
+.gate[hidden],.gate-card [hidden]{display:none}
+.gate-card{width:100%;max-width:340px;text-align:center}
+.gate-card .welcome-logo{margin:0 auto 14px}
+.gate-card .field{text-align:left;margin-top:12px}
+.gate-card .auth-actions{margin-top:14px}
+.pin-dots{display:flex;justify-content:center;gap:16px;margin:26px 0 8px}
+.pin-dots span{width:14px;height:14px;border-radius:50%;border:1.5px solid var(--muted)}
+.pin-dots span.filled{background:var(--text);border-color:var(--text)}
+.pin-pad{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:18px auto;max-width:260px}
+.pin-pad button{height:66px;border-radius:50%;border:1px solid var(--border);background:#0F151E;color:var(--text);font-size:24px;font-weight:600;cursor:pointer}
+.pin-pad button:active{background:#1C2635}
+.pin-pad span{display:block}
+.pin-box{margin-top:16px;padding-top:14px;border-top:1px solid var(--border)}
+.pin-box .field{margin-top:12px;margin-bottom:10px}
+.pin-box .btn{margin-top:4px}

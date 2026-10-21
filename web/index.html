@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#0A0E14">
+<meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Control Finance">
@@ -147,7 +148,7 @@
     <section class="screen" id="screen-perfil">
       <header class="topbar">
         <h1>Perfil</h1>
-        <span class="badge badge--soft">LOCAL</span>
+        <span class="badge badge--soft" id="cloud-badge">LOCAL</span>
       </header>
 
       <div class="card identity">
@@ -163,6 +164,85 @@
         <div class="card stat"><strong id="stat-tx">0</strong><span>Movimientos</span></div>
         <div class="card stat"><strong id="stat-months">0</strong><span>Meses</span></div>
         <div class="card stat"><strong id="stat-saved">$ 0</strong><span>Ahorro total</span></div>
+      </div>
+
+      <div class="card account-card" id="account-card" hidden>
+        <div class="row-between">
+          <strong>Cuenta y nube</strong>
+          <span class="badge badge--soft" id="account-status">LOCAL</span>
+        </div>
+        <p class="tiny" id="account-hint">Sincroniza tus movimientos entre dispositivos y activa el Atajo de iOS.</p>
+
+        <div id="auth-form">
+          <label class="field">
+            <span>Email</span>
+            <input id="auth-email" name="email" type="email" inputmode="email" autocomplete="email" autocapitalize="none" autocorrect="off" spellcheck="false" placeholder="tu@email.com">
+          </label>
+          <label class="field">
+            <span>Contraseña</span>
+            <input id="auth-password" name="password" type="password" autocomplete="current-password" placeholder="Mínimo 6 caracteres">
+          </label>
+          <div class="auth-actions">
+            <button class="btn primary" data-action="login">Entrar</button>
+            <button class="btn secondary" data-action="signup">Crear cuenta</button>
+          </div>
+          <p class="auth-msg" id="auth-msg"></p>
+        </div>
+
+        <div id="account-panel" hidden>
+          <p class="small" id="account-email"></p>
+          <p class="tiny" id="sync-info">—</p>
+          <button class="btn secondary" data-action="sync-now">Sincronizar ahora</button>
+          <button class="btn ghost" data-action="logout">Cerrar sesión</button>
+
+          <div class="pin-box">
+            <div class="row-between">
+              <strong>Bloqueo con PIN</strong>
+              <span class="badge badge--soft" id="pin-status">DESACTIVADO</span>
+            </div>
+            <p class="tiny">Te pide un PIN de 4 números al abrir la app en este iPhone. Tu sesión sigue iniciada.</p>
+            <label class="field">
+              <span>PIN (4 números)</span>
+              <input id="pin-new" type="password" inputmode="numeric" maxlength="4" autocomplete="off">
+            </label>
+            <label class="field">
+              <span>Repite el PIN</span>
+              <input id="pin-confirm" type="password" inputmode="numeric" maxlength="4" autocomplete="off">
+            </label>
+            <button class="btn secondary" data-action="save-pin" id="pin-save">Activar PIN</button>
+            <button class="btn ghost" data-action="remove-pin" id="pin-remove" hidden>Quitar PIN</button>
+            <p class="auth-msg" id="pin-msg"></p>
+          </div>
+        </div>
+      </div>
+
+      <div class="card quick-card" id="quick-card" hidden>
+        <div class="row-between">
+          <strong>Atajo de iOS</strong>
+          <span class="badge">BETA</span>
+        </div>
+        <p class="tiny">Añade gastos desde el Centro de Control o la pantalla de inicio, sin abrir la app.</p>
+        <button class="btn secondary" data-action="gen-token">Generar token del atajo</button>
+        <div id="quick-token-box" hidden>
+          <label class="field">
+            <span>Token del atajo (si lo pierdes, genera otro)</span>
+            <input id="quick-token" readonly>
+          </label>
+          <button class="btn secondary" data-action="copy-token">Copiar token</button>
+          <button class="btn ghost" data-action="copy-shortcut">Copiar configuración del atajo</button>
+        </div>
+        <details class="steps-box">
+          <summary>Cómo crear el Atajo en iPhone</summary>
+          <ol class="steps">
+            <li>Abre <strong>Atajos</strong> → <strong>+</strong> → “Añadir acción”.</li>
+            <li>Añade <strong>Pedir entrada</strong> (número): “¿Cuánto?”.</li>
+            <li>Añade <strong>Elegir del menú</strong> con tus categorías.</li>
+            <li>Añade <strong>Obtener contenido de URL</strong>: método <strong>POST</strong>, URL y cabeceras <code>apikey</code> + <code>Content-Type</code>.</li>
+            <li>En el cuerpo (JSON) usa <code>p_token</code>, <code>p_amount</code>, <code>p_type</code>, <code>p_category</code>.</li>
+            <li>Guarda y añádelo al <strong>Centro de Control</strong> o a un widget de Atajos.</li>
+          </ol>
+          <p class="tiny">La configuración exacta se copia con el botón de arriba. Guía completa: <a href="https://github.com/bydavidp/Control_Finance/blob/main/docs/atajo-ios.md" target="_blank" rel="noopener">docs/atajo-ios.md</a>.</p>
+        </details>
       </div>
 
       <div class="card form-card">
@@ -196,7 +276,7 @@
         <input type="file" id="import-file" accept="application/json,.json" hidden>
       </div>
 
-      <p class="version">Control Finance 0.1 · PWA · COP</p>
+      <p class="version">Control Finance 0.2 · PWA · COP</p>
     </section>
   </main>
 
@@ -288,8 +368,58 @@
   <p class="tiny center">Todo se guarda solo en este dispositivo.</p>
 </div>
 
+<!-- ================= ACCESO: SESIÓN Y PIN ================= -->
+<div class="gate" id="gate" hidden>
+  <div class="gate-card">
+    <div class="welcome-logo">CF</div>
+
+    <p class="muted small" id="gate-loading">Cargando…</p>
+
+    <div id="gate-login" hidden>
+      <h2 class="welcome-title">Inicia sesión</h2>
+      <p class="tiny" id="gate-login-hint">Entra con tu email y contraseña para ver tus finanzas.</p>
+      <label class="field">
+        <span>Email</span>
+        <input id="gate-email" name="email" type="email" inputmode="email" autocomplete="email" autocapitalize="none" autocorrect="off" spellcheck="false" placeholder="tu@email.com">
+      </label>
+      <label class="field">
+        <span>Contraseña</span>
+        <input id="gate-password" name="password" type="password" autocomplete="current-password" placeholder="Mínimo 6 caracteres">
+      </label>
+      <div class="auth-actions">
+        <button class="btn primary" data-action="gate-login">Entrar</button>
+        <button class="btn secondary" data-action="gate-signup" id="gate-signup">Crear cuenta</button>
+      </div>
+      <p class="auth-msg" id="gate-msg"></p>
+    </div>
+
+    <div id="gate-pin" hidden>
+      <h2 class="welcome-title">Ingresa tu PIN</h2>
+      <div class="pin-dots" id="pin-dots"><span></span><span></span><span></span><span></span></div>
+      <p class="auth-msg" id="gate-pin-msg"></p>
+      <div class="pin-pad">
+        <button data-action="pin-key" data-key="1">1</button>
+        <button data-action="pin-key" data-key="2">2</button>
+        <button data-action="pin-key" data-key="3">3</button>
+        <button data-action="pin-key" data-key="4">4</button>
+        <button data-action="pin-key" data-key="5">5</button>
+        <button data-action="pin-key" data-key="6">6</button>
+        <button data-action="pin-key" data-key="7">7</button>
+        <button data-action="pin-key" data-key="8">8</button>
+        <button data-action="pin-key" data-key="9">9</button>
+        <span></span>
+        <button data-action="pin-key" data-key="0">0</button>
+        <button data-action="pin-key" data-key="back" aria-label="Borrar">⌫</button>
+      </div>
+      <button class="btn ghost" data-action="gate-password">Usar contraseña</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast" hidden></div>
 
+<script src="config.js"></script>
+<script src="vendor/supabase.js"></script>
 <script src="app.js"></script>
 </body>
 </html>
